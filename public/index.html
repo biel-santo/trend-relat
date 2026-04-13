@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório Técnico · Trend Controls</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#090c14;--s1:#0f1322;--s2:#141929;--s3:#1a2035;
+  --border:#212840;--border2:#2a3352;
+  --accent:#2563eb;--acg:#60a5fa;
+  --text:#d8e2f5;--sub:#7080a8;--muted:#3d4d6e;
+  --green:#10b981;--amber:#f59e0b;--red:#ef4444;
+  --r:10px;--rs:6px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+.app{display:flex;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:230px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:50;}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border);}
+.sb-logo img{height:36px;display:block;}
+.sb-logo-txt{display:none;font-size:13px;font-weight:700;color:var(--text);}
+.sb-app{font-size:11px;color:var(--sub);font-family:'DM Mono',monospace;margin-top:8px;}
+nav{flex:1;padding:10px 0;overflow-y:auto;}
+.ns{padding:8px 16px 3px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;font-size:13px;color:var(--sub);transition:all .15s;border-left:2px solid transparent;}
+.ni:hover{color:var(--text);background:var(--s2);}
+.ni.active{color:var(--acg);background:rgba(96,165,250,.07);border-left-color:var(--accent);}
+.ni-ic{font-size:13px;width:16px;text-align:center;}
+.sb-foot{padding:12px 16px;border-top:1px solid var(--border);}
+.db-btns{display:flex;flex-direction:column;gap:6px;padding:0 10px 8px;}
+.db-btn{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--rs);border:1px solid var(--border2);background:transparent;color:var(--sub);font-size:11.5px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;width:100%;}
+.db-btn:hover{border-color:var(--acg);color:var(--acg);}
+
+/* MAIN */
+.main{margin-left:230px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:12px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;}
+.tb-title{font-size:15px;font-weight:600;}
+.tb-sub{font-size:11px;color:var(--sub);margin-top:1px;}
+.tb-actions{display:flex;gap:8px;}
+
+.page{display:none;padding:24px 26px 80px;}
+.page.active{display:block;}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;}
+.ch{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.ch-l{display:flex;align-items:center;gap:9px;}
+.cbadge{width:22px;height:22px;background:var(--accent);border-radius:4px;display:grid;place-items:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.ct{font-size:13.5px;font-weight:600;}
+.cb2{padding:16px 18px;}
+
+/* FORM */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.full{grid-column:1/-1;}
+.field{margin-bottom:12px;}
+.field:last-child{margin-bottom:0;}
+label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--sub);margin-bottom:4px;}
+input,textarea,select{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:8px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border .15s,box-shadow .15s;-webkit-appearance:none;}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.13);}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237080a8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+select option{background:var(--s2);}
+textarea{resize:vertical;min-height:75px;}
+
+.pill{display:flex;background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);overflow:hidden;transition:border .15s;}
+.pill:focus-within{border-color:var(--accent);}
+.pill select{border:none;background:transparent;box-shadow:none;border-radius:0;flex:1;}
+.pill select:focus{box-shadow:none;}
+.pill-btn{padding:0 11px;height:36px;background:var(--s3);border:none;border-left:1px solid var(--border2);color:var(--acg);cursor:pointer;font-size:15px;transition:background .15s;flex-shrink:0;}
+.pill-btn:hover{background:rgba(96,165,250,.15);}
+
+.auto-box{background:var(--s3);border:1px solid var(--border);border-radius:var(--rs);padding:11px 13px;display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:7px;}
+.af-label{font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:1px;}
+.af-val{font-size:12.5px;color:var(--text);}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px;}
+.chip{display:inline-flex;align-items:center;gap:5px;background:rgba(37,99,235,.1);border:1px solid rgba(96,165,250,.25);border-radius:16px;padding:4px 10px 4px 8px;font-size:12px;color:var(--acg);}
+.chip-x{background:none;border:none;color:var(--sub);cursor:pointer;font-size:12px;padding:0;line-height:1;transition:color .15s;}
+.chip-x:hover{color:var(--red);}
+
+/* STATUS */
+.st-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:3px;}
+.st-btn{padding:6px 12px;border-radius:16px;border:1.5px solid var(--border2);background:transparent;color:var(--sub);font-size:11.5px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s;}
+.st-btn.sg{border-color:var(--green);color:var(--green);background:rgba(16,185,129,.07);}
+.st-btn.sa{border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,.07);}
+.st-btn.sr{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.07);}
+
+/* IMG GRID */
+.ig{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:11px;}
+.icard{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden;}
+.icard img.ipreview{width:100%;height:120px;object-fit:cover;display:block;}
+.ifoot{padding:7px 9px;}
+.ifoot input{font-size:11.5px;padding:5px 7px;margin-bottom:5px;}
+.idel{width:100%;padding:4px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:4px;color:var(--red);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;}
+.idel:hover{background:rgba(239,68,68,.16);}
+.iadd{border:2px dashed var(--border2);border-radius:var(--r);height:175px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:11.5px;gap:7px;transition:all .15s;}
+.iadd:hover{border-color:var(--accent);color:var(--acg);}
+
+/* ASSET GALLERY */
+.asset-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:8px;max-height:220px;overflow-y:auto;}
+.asset-thumb{border:2px solid var(--border2);border-radius:var(--rs);overflow:hidden;cursor:pointer;position:relative;aspect-ratio:1;transition:border .15s;}
+.asset-thumb:hover{border-color:var(--accent);}
+.asset-thumb.selected{border-color:var(--green);box-shadow:0 0 0 2px rgba(16,185,129,.3);}
+.asset-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.asset-thumb .asset-del{position:absolute;top:3px;right:3px;background:rgba(239,68,68,.85);border:none;border-radius:3px;color:#fff;font-size:10px;cursor:pointer;padding:1px 5px;display:none;}
+.asset-thumb:hover .asset-del{display:block;}
+.asset-upload-btn{border:2px dashed var(--border2);border-radius:var(--rs);aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:10px;gap:4px;transition:all .15s;}
+.asset-upload-btn:hover{border-color:var(--accent);color:var(--acg);}
+.selected-preview{width:100%;height:70px;background:var(--s3);border:1px solid var(--border);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;margin-top:6px;overflow:hidden;}
+.selected-preview img{max-height:64px;max-width:100%;object-fit:contain;}
+
+/* DB TABLE */
+.dbt{width:100%;border-collapse:collapse;}
+.dbt th{padding:9px 13px;text-align:left;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--s2);}
+.dbt td{padding:9px 13px;font-size:12.5px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.dbt tr:last-child td{border-bottom:none;}
+.dbt tr:hover td{background:rgba(255,255,255,.02);}
+.td-acts{display:flex;gap:5px;}
+.bic{background:none;border:1px solid var(--border2);border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11.5px;color:var(--sub);transition:all .15s;}
+.bic:hover{border-color:var(--acg);color:var(--acg);}
+.bic.del:hover{border-color:var(--red);color:var(--red);}
+.tag{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600;}
+.tb{background:rgba(37,99,235,.1);color:var(--acg);}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(9,12,20,.88);z-index:200;display:none;place-items:center;backdrop-filter:blur(5px);}
+.ov.open{display:grid;}
+.modal{background:var(--s1);border:1px solid var(--border2);border-radius:13px;width:500px;max-width:96vw;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:su .18s ease;max-height:90vh;overflow-y:auto;}
+@keyframes su{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.mh{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--s1);z-index:5;}
+.mt{font-size:14px;font-weight:600;}
+.mx{background:none;border:none;color:var(--sub);cursor:pointer;font-size:19px;padding:1px 5px;border-radius:4px;transition:background .15s;}
+.mx:hover{background:var(--s3);}
+.mb{padding:18px;}
+.mf{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end;}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:var(--rs);border:none;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.bp{background:var(--accent);color:#fff;}
+.bp:hover{background:#1d4ed8;transform:translateY(-1px);}
+.bg{background:transparent;border:1px solid var(--border2);color:var(--text);}
+.bg:hover{border-color:var(--accent);color:var(--acg);}
+.bsm{padding:5px 11px;font-size:12px;}
+.bgr{background:var(--green);color:#fff;}
+.bgr:hover{background:#0ea472;transform:translateY(-1px);}
+.bgr:disabled{background:#1e3a2e;color:#4a7a5e;cursor:not-allowed;transform:none;}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;right:22px;background:var(--s2);border:1px solid var(--border2);border-radius:9px;padding:11px 16px;font-size:12.5px;display:none;align-items:center;gap:9px;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,.4);min-width:220px;}
+#toast.show{display:flex;}
+.spin{width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0;}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.divider{height:1px;background:var(--border);margin:12px 0;}
+.empty{text-align:center;padding:36px;color:var(--muted);}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:680px){.sidebar{width:0;overflow:hidden;}.main{margin-left:0;}.g2,.g3{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <img id="logo-img" src="/logo.png" alt="Trend Controls"
+         onerror="this.style.display='none';document.querySelector('.sb-logo-txt').style.display='block'">
+    <div class="sb-logo-txt">trend controls</div>
+    <div class="sb-app">Relatórios HVAC · v4</div>
+  </div>
+  <nav>
+    <div class="ns">Relatório</div>
+    <div class="ni active" onclick="showPage('report')"><span class="ni-ic">📋</span>Novo Relatório</div>
+    <div class="ns">Cadastros</div>
+    <div class="ni" onclick="showPage('db-tech')"><span class="ni-ic">👷</span>Técnicos</div>
+    <div class="ni" onclick="showPage('db-client')"><span class="ni-ic">🏥</span>Clientes / Obras</div>
+    <div class="ns">Banco de Dados</div>
+    <div class="db-btns">
+      <button class="db-btn" onclick="exportDB()">⬇ Exportar JSON</button>
+      <button class="db-btn" onclick="document.getElementById('import-in').click()">⬆ Importar JSON</button>
+      <input type="file" id="import-in" accept=".json" style="display:none" onchange="importDB(event)">
+    </div>
+  </nav>
+  <div class="sb-foot">
+    <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;">Trend Controls © 2026</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title" id="tb-title">Novo Relatório</div>
+      <div class="tb-sub" id="tb-sub">Preencha e exporte em PDF</div>
+    </div>
+    <div class="tb-actions">
+      <button class="btn bg bsm" onclick="resetReport()">↺ Limpar</button>
+      <button class="btn bgr bsm" id="pdf-btn" onclick="generatePDF()">⬇ Gerar PDF</button>
+    </div>
+  </div>
+
+  <!-- PAGE REPORT -->
+  <div class="page active" id="page-report">
+
+    <div class="card">
+      <div class="ch"><div class="ch-l"><div class="cbadge">1</div><div class="ct">Identificação</div></div></div>
+      <div class="cb2">
+        <div class="g3">
+          <div class="field"><label>Nº do Relatório</label><input type="text" id="r_num" placeholder="Ex: RA04"></div>
+          <div class="field"><label>Data da Visita</label><input type="date" id="r_date"></div>
+          <div class="field">
+            <label>Status do Sistema</label>
+            <div class="st-row">
+              <button class="st-btn sg" onclick="setSt(this,'Operacional')">✓ Operacional</button>
+              <button class="st-btn" onclick="setSt(this,'Com pendências')">⚠ Pendências</button>
+              <button class="st-btn" onclick="setSt(this,'Crítico')">✕ Crítico</button>
+            </div>
+            <input type="hidden" id="r_status" value="Operacional">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <div class="ch-l"><div class="cbadge">2</div><div class="ct">Cliente &amp; Empreendimento</div></div>
+        <button class="btn bg bsm" onclick="openM('m-client')">+ Novo</button>
+      </div>
+      <div class="cb2">
+        <div class="field">
+          <label>Selecione o cliente / obra</label>
+          <div class="pill">
+            <select id="sel-client" onchange="fillClient()"><option value="">— selecione —</option></select>
+            <button class="pill-btn" onclick="openM('m-client')">＋</button>
+          </div>
+        </div>
+        <div id="client-info" style="display:none">
+          <div class="auto-box" id="client-auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <div class="ch-l"><div class="cbadge">3</div><div class="ct">Técnicos Presentes</div></div>
+        <button class="btn bg bsm" onclick="openM('m-tech')">+ Novo</button>
+      </div>
+      <div class="cb2">
+        <div class="field">
+          <label>Adicionar técnico à visita</label>
+          <div class="pill">
+            <select id="sel-tech"><option value="">— selecione —</option></select>
+            <button class="pill-btn" onclick="addChip()">＋</button>
+          </div>
+        </div>
+        <div class="chips" id="chips"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ch-l"><div class="cbadge">4</div><div class="ct">Observações e Atividades</div></div></div>
+      <div class="cb2">
+        <div class="field"><label>Descrição das atividades realizadas</label>
+          <textarea id="r_obs" rows="4" placeholder="Descreva as manutenções realizadas...">Venho através deste, informar que foi realizado a manutenção preventiva, preditiva e corretiva no sistema do empreendimento.
+
+Durante a visita técnica realizamos o mapeamento de toda rede TCP/IP (protocolo Bacnet e Modbus) dos controladores lógicos programáveis – CLPs.</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ch-l"><div class="cbadge">5</div><div class="ct">Considerações Finais</div></div></div>
+      <div class="cb2">
+        <div class="field">
+          <textarea id="r_final" rows="5">Com base em nossa análise técnica, podemos afirmar que o sistema se encontra operacional com alguns itens a serem analisados nas próximas visitas.
+
+Enfatizo que sempre mantenham as manutenções preventivas e preditivas, visando a mitigação das corretivas, e principalmente garantindo a plena eficiência do sistema.
+
+Assim garantimos perfeito funcionamento, e integridade da vida útil de todos os equipamentos físicos.</textarea>
+        </div>
+        <div class="field"><label>Citação de encerramento (opcional)</label>
+          <input type="text" id="r_quote" value='"A força não provém da capacidade física. Provém de uma vontade indomável".'>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div class="ch-l"><div class="cbadge">6</div><div class="ct">Imagens dos Serviços</div></div></div>
+      <div class="cb2">
+        <div class="ig" id="img-grid">
+          <div class="iadd" onclick="document.getElementById('file-in').click()">
+            <span style="font-size:24px">📷</span><span>Adicionar imagem</span>
+          </div>
+        </div>
+        <input type="file" id="file-in" accept="image/*" style="display:none" onchange="handleImg(event)" multiple>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE DB-TECH -->
+  <div class="page" id="page-db-tech">
+    <div class="card">
+      <div class="ch">
+        <div class="ch-l"><span style="font-size:15px">👷</span><div class="ct">Técnicos Cadastrados</div></div>
+        <button class="btn bp bsm" onclick="openM('m-tech')">+ Novo Técnico</button>
+      </div>
+      <div id="tech-tbl"></div>
+    </div>
+  </div>
+
+  <!-- PAGE DB-CLIENT -->
+  <div class="page" id="page-db-client">
+    <div class="card">
+      <div class="ch">
+        <div class="ch-l"><span style="font-size:15px">🏥</span><div class="ct">Clientes / Obras Cadastrados</div></div>
+        <button class="btn bp bsm" onclick="openM('m-client')">+ Novo Cliente</button>
+      </div>
+      <div id="client-tbl"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL TECH -->
+<div class="ov" id="m-tech">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="m-tech-title">Novo Técnico</div><button class="mx" onclick="closeM('m-tech')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="tech-eid">
+      <div class="g2">
+        <div class="field full"><label>Nome completo *</label><input type="text" id="t-nome" placeholder="Ex: Gabriel Renato do Espirito Santo"></div>
+        <div class="field"><label>Cargo</label><input type="text" id="t-cargo" placeholder="Ex: Auxiliar Técnico"></div>
+        <div class="field"><label>Telefone</label><input type="tel" id="t-tel" placeholder="(11) 99999-9999"></div>
+        <div class="field full"><label>E-mail</label><input type="email" id="t-email" placeholder="nome@trendcontrols.com.br"></div>
+        <div class="field full">
+          <label>Assinatura</label>
+          <div class="asset-gallery" id="sign-gallery"></div>
+          <div class="selected-preview" id="sign-preview" style="display:none"><img id="sign-preview-img" src=""></div>
+          <div style="display:flex;gap:8px;margin-top:6px;align-items:center;">
+            <span style="font-size:11px;color:var(--muted);">ou</span>
+            <button class="btn bg bsm" onclick="document.getElementById('sign-in').click()">⬆ Upload novo</button>
+            <button class="clr-btn" onclick="clearSign()">✕ Remover</button>
+          </div>
+          <input type="file" id="sign-in" accept="image/*" style="display:none" onchange="handleSignUpload(event)">
+          <input type="hidden" id="t-sign">
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bg" onclick="closeM('m-tech')">Cancelar</button>
+      <button class="btn bp" onclick="saveTech()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CLIENT -->
+<div class="ov" id="m-client">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="m-client-title">Novo Cliente / Obra</div><button class="mx" onclick="closeM('m-client')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="client-eid">
+      <div class="g2">
+        <div class="field full"><label>Nome do empreendimento *</label><input type="text" id="cl-obra" placeholder="Ex: Birmann 29"></div>
+        <div class="field full"><label>Nome no "Para:" da tabela</label><input type="text" id="cl-para" placeholder="Ex: Wework  (se diferente do empreendimento)"></div>
+        <div class="field full"><label>Sistema / Escopo</label><input type="text" id="cl-sistema" value="SISTEMA DE SUPERVISÃO E CONTROLE DE UTILIDADES – HVAC"></div>
+        <div class="field full">
+          <label>Foto de capa (fachada)</label>
+          <div class="asset-gallery" id="cover-gallery"></div>
+          <div class="selected-preview" id="cover-preview" style="display:none"><img id="cover-preview-img" src=""></div>
+          <div style="display:flex;gap:8px;margin-top:6px;align-items:center;">
+            <span style="font-size:11px;color:var(--muted);">ou</span>
+            <button class="btn bg bsm" onclick="document.getElementById('cover-in').click()">⬆ Upload novo</button>
+            <button class="clr-btn" onclick="clearCover()">✕ Remover</button>
+          </div>
+          <input type="file" id="cover-in" accept="image/*" style="display:none" onchange="handleCoverUpload(event)">
+          <input type="hidden" id="cl-cover">
+        </div>
+        <div class="divider full"></div>
+        <div class="field full" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--sub);">Contato do cliente</div>
+        <div class="field"><label>Nome do contato *</label><input type="text" id="cl-nome" placeholder="Ex: Vitor Santos"></div>
+        <div class="field"><label>Cargo</label><input type="text" id="cl-cargo-dest" placeholder="Ex: Facilities Manager"></div>
+        <div class="field full"><label>Endereço</label><input type="text" id="cl-local" placeholder="Ex: Av. Brigadeiro Faria Lima, 3729 - SP"></div>
+        <div class="field"><label>Telefone</label><input type="tel" id="cl-tel" placeholder="(11) 99999-9999"></div>
+        <div class="field full"><label>E-mail</label><input type="email" id="cl-email" placeholder="contato@empresa.com.br"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bg" onclick="closeM('m-client')">Cancelar</button>
+      <button class="btn bp" onclick="saveClient()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"><div id="t-ic">⏳</div><span id="t-msg">Aguarde...</span></div>
+
+<script>
+// ════════════════════════════════════════
+//  DB — sync with server banco.json
+// ════════════════════════════════════════
+const K_TECH='tc_techs_v4', K_CLI='tc_clients_v4';
+let techs=[], clients=[];
+
+function uid(){ return '_'+Math.random().toString(36).slice(2,9); }
+
+async function loadDB(){
+  try {
+    const r = await fetch('/api/banco');
+    const d = await r.json();
+    if(d.techs)   techs   = d.techs;
+    if(d.clients) clients = d.clients;
+  } catch(e) {
+    // fallback to localStorage
+    try{ techs   = JSON.parse(localStorage.getItem(K_TECH))  || []; }catch(e2){}
+    try{ clients = JSON.parse(localStorage.getItem(K_CLI))   || []; }catch(e2){}
+  }
+  if(!techs.length){
+    techs=[
+      {id:uid(),nome:'Gabriel Renato do Espirito Santo',cargo:'Auxiliar Técnico',tel:'(11) 94165-4105',email:'gabriel.r@trendcontrols.com.br',sign:''},
+      {id:uid(),nome:'Rafael Ferreira',cargo:'Técnico de Campo',tel:'',email:'',sign:''},
+    ];
+  }
+  if(!clients.length){
+    clients=[{id:uid(),obra:'Birmann 29',para:'Wework',sistema:'SISTEMA DE SUPERVISÃO E CONTROLE DE UTILIDADES – HVAC',cover:'',nome:'Vitor Santos',cargoDest:'Facilities Manager',local:'Av. Brigadeiro Faria Lima, 3729 - SP',tel:'(11) 9 42024867',email:'vitor.santos6@wework.com.br'}];
+  }
+  await persistDB();
+}
+
+async function persistDB(){
+  try {
+    await fetch('/api/banco',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({techs,clients})});
+  } catch(e) {}
+  localStorage.setItem(K_TECH, JSON.stringify(techs));
+  localStorage.setItem(K_CLI,  JSON.stringify(clients));
+}
+
+function exportDB(){
+  const b=new Blob([JSON.stringify({techs,clients},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b);
+  a.download='tc_banco_dados.json'; a.click();
+  toast('✅','Banco exportado!');
+}
+
+async function importDB(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=async ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.techs)   techs   =d.techs;
+      if(d.clients) clients =d.clients;
+      await persistDB();
+      refreshSelects(); toast('✅','Banco importado!');
+    }catch{ toast('❌','Arquivo inválido.'); }
+  };
+  r.readAsText(f); e.target.value='';
+}
+
+// ════════════════════════════════════════
+//  NAV
+// ════════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.ni').forEach(n=>{if(n.getAttribute('onclick')?.includes(id))n.classList.add('active');});
+  const titles={report:'Novo Relatório','db-tech':'Técnicos','db-client':'Clientes / Obras'};
+  const subs  ={report:'Preencha e exporte em PDF','db-tech':'Gerencie os técnicos','db-client':'Gerencie clientes e obras'};
+  document.getElementById('tb-title').textContent=titles[id]||'';
+  document.getElementById('tb-sub').textContent=subs[id]||'';
+  if(id==='db-tech')  renderTechTbl();
+  if(id==='db-client')renderClientTbl();
+}
+
+// ════════════════════════════════════════
+//  SELECTS
+// ════════════════════════════════════════
+function refreshSelects(){
+  const ts=document.getElementById('sel-tech');
+  ts.innerHTML='<option value="">— selecione —</option>';
+  techs.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.nome;ts.appendChild(o);});
+
+  const cs=document.getElementById('sel-client');
+  cs.innerHTML='<option value="">— selecione —</option>';
+  clients.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.obra;cs.appendChild(o);});
+}
+
+function fillClient(){
+  const id=document.getElementById('sel-client').value;
+  const c=clients.find(x=>x.id===id);
+  const box=document.getElementById('client-info');
+  if(!c){box.style.display='none';return;}
+  box.style.display='block';
+  document.getElementById('client-auto').innerHTML=`
+    <div><div class="af-label">Empreendimento</div><div class="af-val">${c.obra}</div></div>
+    <div><div class="af-label">Para (tabela capa)</div><div class="af-val">${c.para||c.obra}</div></div>
+    <div><div class="af-label">Sistema</div><div class="af-val" style="font-size:11px">${c.sistema}</div></div>
+    <div><div class="af-label">Contato</div><div class="af-val">${c.nome}${c.cargoDest?' · '+c.cargoDest:''}</div></div>
+    <div><div class="af-label">Endereço</div><div class="af-val">${c.local||'—'}</div></div>
+    <div><div class="af-label">Telefone</div><div class="af-val">${c.tel||'—'}</div></div>
+    <div><div class="af-label">E-mail</div><div class="af-val">${c.email||'—'}</div></div>`;
+}
+
+// ════════════════════════════════════════
+//  TECH CHIPS
+// ════════════════════════════════════════
+let selTechs=[];
+function addChip(){
+  const id=document.getElementById('sel-tech').value;
+  if(!id||selTechs.includes(id))return;
+  selTechs.push(id); renderChips();
+  document.getElementById('sel-tech').value='';
+}
+function removeChip(id){selTechs=selTechs.filter(x=>x!==id);renderChips();}
+function renderChips(){
+  const box=document.getElementById('chips'); box.innerHTML='';
+  selTechs.forEach(id=>{
+    const t=techs.find(x=>x.id===id); if(!t)return;
+    const c=document.createElement('div'); c.className='chip';
+    c.innerHTML=`✔ ${t.nome} <button class="chip-x" onclick="removeChip('${id}')">✕</button>`;
+    box.appendChild(c);
+  });
+}
+
+// ════════════════════════════════════════
+//  STATUS
+// ════════════════════════════════════════
+function setSt(btn,val){
+  document.querySelectorAll('.st-btn').forEach(b=>b.className='st-btn');
+  document.getElementById('r_status').value=val;
+  btn.classList.add(val==='Operacional'?'sg':val==='Com pendências'?'sa':'sr');
+}
+
+// ════════════════════════════════════════
+//  IMAGES — saved to /img on server
+// ════════════════════════════════════════
+let images=[];   // [{url:'/img/xxx.jpg', caption:'...', previewSrc:'...'}]
+
+async function handleImg(e){
+  const files=Array.from(e.target.files);
+  e.target.value='';
+  for(const f of files){
+    toast('⏳',`Salvando imagem...`,true);
+    const dataUrl = await readAsDataUrl(f);
+    const idx     = images.length;
+    const caption = `Figura ${idx+1} - Manutenção preventiva do painel de automação`;
+    // detect orientation before uploading
+    const landscape = await detectLandscape(dataUrl);
+    try{
+      const res  = await fetch('/api/upload-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dataUrl,caption})});
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error||'Upload failed');
+      images.push({url:data.url, caption:data.caption, previewSrc:dataUrl, landscape});
+      renderImgGrid();
+    }catch(err){
+      toast('❌',`Erro: ${err.message}`);
+    }
+  }
+  hideToast();
+}
+
+function detectLandscape(dataUrl){
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>resolve(img.naturalWidth >= img.naturalHeight);
+    img.onerror=()=>resolve(true);
+    img.src=dataUrl;
+  });
+}
+
+function readAsDataUrl(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=ev=>res(ev.target.result);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function removeImg(i){
+  images.splice(i,1);
+  // only renumber captions that are still the exact default pattern
+  images.forEach((im,j)=>{
+    if(/^Figura \d+ - Manutenção preventiva do painel de automação$/.test(im.caption)){
+      im.caption=`Figura ${j+1} - Manutenção preventiva do painel de automação`;
+    }
+  });
+  renderImgGrid();
+}
+
+function renderImgGrid(){
+  const g=document.getElementById('img-grid'); g.innerHTML='';
+  images.forEach((img,i)=>{
+    const src = img.previewSrc || img.url;
+    const card=document.createElement('div'); card.className='icard';
+
+    const preview=document.createElement('img');
+    preview.src=src; preview.className='ipreview';
+
+    const inp=document.createElement('input');
+    inp.type='text';
+    inp.value=img.caption;
+    inp.placeholder=`Figura ${i+1} - Manutenção preventiva do painel de automação`;
+    // closure over the object reference — always updates the right item
+    inp.addEventListener('input', ()=>{ img.caption=inp.value; });
+
+    const del=document.createElement('button');
+    del.className='idel'; del.textContent='✕ Remover';
+    del.addEventListener('click',()=>removeImg(i));
+
+    const foot=document.createElement('div'); foot.className='ifoot';
+    foot.appendChild(inp); foot.appendChild(del);
+    card.appendChild(preview); card.appendChild(foot);
+    g.appendChild(card);
+  });
+  const add=document.createElement('div'); add.className='iadd';
+  add.onclick=()=>document.getElementById('file-in').click();
+  add.innerHTML='<span style="font-size:24px">📷</span><span>Adicionar imagem</span>';
+  g.appendChild(add);
+}
+
+// ════════════════════════════════════════
+//  ASSET GALLERY (covers & signatures — saved permanently in /img)
+// ════════════════════════════════════════
+let assets = [];
+
+async function loadAssets(){
+  try {
+    const r = await fetch('/api/assets');
+    assets = await r.json();
+  } catch(e){ assets=[]; }
+}
+
+async function uploadAsset(dataUrl, suggestedName){
+  const r = await fetch('/api/assets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dataUrl, name: suggestedName})});
+  const d = await r.json();
+  if(!r.ok) throw new Error(d.error||'Upload failed');
+  assets.push(d);
+  return d.url;
+}
+
+async function deleteAsset(url){
+  const fname = url.split('/').pop();
+  await fetch(`/api/assets/${fname}`,{method:'DELETE'}).catch(()=>{});
+  assets = assets.filter(a=>a.url!==url);
+}
+
+function renderAssetGallery(galleryId, selectedUrl, onSelect){
+  const g = document.getElementById(galleryId);
+  g.innerHTML = '';
+  assets.forEach(a=>{
+    const d = document.createElement('div');
+    d.className = 'asset-thumb' + (a.url===selectedUrl?' selected':'');
+    d.innerHTML = `<img src="${a.url}" alt="${a.name}">
+      <button class="asset-del" onclick="event.stopPropagation();removeAssetFrom('${galleryId}','${a.url}',${JSON.stringify(onSelect.toString())})">✕</button>`;
+    d.addEventListener('click', ()=>onSelect(a.url));
+    g.appendChild(d);
+  });
+  // upload button
+  const up = document.createElement('div');
+  up.className = 'asset-upload-btn';
+  up.innerHTML = '<span style="font-size:18px">＋</span><span>Novo</span>';
+  up.onclick = ()=>{ g._onSelect=onSelect; g._galleryId=galleryId; document.getElementById(galleryId==='sign-gallery'?'sign-in':'cover-in').click(); };
+  g.appendChild(up);
+}
+
+// called by delete button inside gallery — needs string-free approach
+function assetGalleryDelete(galleryId, url){
+  if(!confirm('Remover esta imagem permanentemente?')) return;
+  deleteAsset(url).then(()=>{
+    // re-render whichever gallery it belongs to
+    if(galleryId==='sign-gallery') renderAssetGallery('sign-gallery', document.getElementById('t-sign').value, selectSign);
+    else renderAssetGallery('cover-gallery', document.getElementById('cl-cover').value, selectCover);
+  });
+}
+
+function selectSign(url){
+  document.getElementById('t-sign').value = url;
+  document.getElementById('sign-preview').style.display='flex';
+  document.getElementById('sign-preview-img').src = url;
+  renderAssetGallery('sign-gallery', url, selectSign);
+}
+function clearSign(){
+  document.getElementById('t-sign').value='';
+  document.getElementById('sign-preview').style.display='none';
+  renderAssetGallery('sign-gallery','', selectSign);
+}
+
+function selectCover(url){
+  document.getElementById('cl-cover').value = url;
+  document.getElementById('cover-preview').style.display='flex';
+  document.getElementById('cover-preview-img').src = url;
+  renderAssetGallery('cover-gallery', url, selectCover);
+}
+function clearCover(){
+  document.getElementById('cl-cover').value='';
+  document.getElementById('cover-preview').style.display='none';
+  renderAssetGallery('cover-gallery','', selectCover);
+}
+
+async function handleSignUpload(e){
+  const f=e.target.files[0]; if(!f)return; e.target.value='';
+  toast('⏳','Salvando assinatura...', true);
+  try {
+    const dataUrl = await readAsDataUrl(f);
+    const url = await uploadAsset(dataUrl, f.name);
+    selectSign(url);
+    hideToast();
+  } catch(err){ toast('❌', err.message); }
+}
+
+async function handleCoverUpload(e){
+  const f=e.target.files[0]; if(!f)return; e.target.value='';
+  toast('⏳','Salvando foto...', true);
+  try {
+    const dataUrl = await readAsDataUrl(f);
+    const url = await uploadAsset(dataUrl, f.name);
+    selectCover(url);
+    hideToast();
+  } catch(err){ toast('❌', err.message); }
+}
+
+// ════════════════════════════════════════
+//  MODALS
+// ════════════════════════════════════════
+function openM(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='m-tech'){
+    document.getElementById('tech-eid').value='';
+    document.getElementById('m-tech-title').textContent='Novo Técnico';
+    ['t-nome','t-cargo','t-tel','t-email','t-sign'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('sign-preview').style.display='none';
+    renderAssetGallery('sign-gallery','', selectSign);
+  }
+  if(id==='m-client'){
+    document.getElementById('client-eid').value='';
+    document.getElementById('m-client-title').textContent='Novo Cliente / Obra';
+    ['cl-obra','cl-para','cl-nome','cl-cargo-dest','cl-local','cl-tel','cl-email','cl-cover'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('cl-sistema').value='SISTEMA DE SUPERVISÃO E CONTROLE DE UTILIDADES – HVAC';
+    document.getElementById('cover-preview').style.display='none';
+    renderAssetGallery('cover-gallery','', selectCover);
+  }
+}
+function closeM(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
+
+// ════════════════════════════════════════
+//  CRUD TECH
+// ════════════════════════════════════════
+async function saveTech(){
+  const nome=document.getElementById('t-nome').value.trim();
+  if(!nome){alert('Informe o nome.');return;}
+  const id=document.getElementById('tech-eid').value;
+  const obj={id:id||uid(),nome,cargo:document.getElementById('t-cargo').value.trim(),tel:document.getElementById('t-tel').value.trim(),email:document.getElementById('t-email').value.trim(),sign:document.getElementById('t-sign').value};
+  if(id){const i=techs.findIndex(t=>t.id===id);techs[i]=obj;}else techs.push(obj);
+  await persistDB(); closeM('m-tech'); refreshSelects(); renderTechTbl();
+  toast('✅','Técnico salvo!');
+}
+function editTech(id){
+  const t=techs.find(x=>x.id===id); openM('m-tech');
+  document.getElementById('m-tech-title').textContent='Editar Técnico';
+  document.getElementById('tech-eid').value=id;
+  document.getElementById('t-nome').value=t.nome;
+  document.getElementById('t-cargo').value=t.cargo;
+  document.getElementById('t-tel').value=t.tel;
+  document.getElementById('t-email').value=t.email;
+  document.getElementById('t-sign').value=t.sign||'';
+  if(t.sign){
+    document.getElementById('sign-preview').style.display='flex';
+    document.getElementById('sign-preview-img').src=t.sign;
+    renderAssetGallery('sign-gallery', t.sign, selectSign);
+  }
+}
+async function deleteTech(id){
+  if(!confirm('Remover técnico?'))return;
+  techs=techs.filter(t=>t.id!==id); selTechs=selTechs.filter(x=>x!==id);
+  await persistDB(); refreshSelects(); renderChips(); renderTechTbl();
+  toast('🗑️','Removido.');
+}
+function renderTechTbl(){
+  const w=document.getElementById('tech-tbl');
+  if(!techs.length){w.innerHTML='<div class="empty">Nenhum técnico cadastrado.</div>';return;}
+  w.innerHTML=`<table class="dbt"><thead><tr><th>Nome</th><th>Cargo</th><th>Contato</th><th>Assinatura</th><th></th></tr></thead><tbody>
+  ${techs.map(t=>`<tr>
+    <td><strong>${t.nome}</strong></td>
+    <td><span class="tag tb">${t.cargo||'—'}</span></td>
+    <td>${t.tel||'—'}<br><span style="font-size:11px;color:var(--sub)">${t.email||''}</span></td>
+    <td>${t.sign?`<img src="${t.sign}" style="height:28px;object-fit:contain;">`:'<span style="color:var(--muted);font-size:11px">—</span>'}</td>
+    <td><div class="td-acts">
+      <button class="bic" onclick="editTech('${t.id}')">✏️</button>
+      <button class="bic del" onclick="deleteTech('${t.id}')">🗑️</button>
+    </div></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+// ════════════════════════════════════════
+//  CRUD CLIENT
+// ════════════════════════════════════════
+async function saveClient(){
+  const obra=document.getElementById('cl-obra').value.trim();
+  const nome=document.getElementById('cl-nome').value.trim();
+  if(!obra||!nome){alert('Preencha empreendimento e contato.');return;}
+  const id=document.getElementById('client-eid').value;
+  const obj={id:id||uid(),obra,para:document.getElementById('cl-para').value.trim(),sistema:document.getElementById('cl-sistema').value.trim(),cover:document.getElementById('cl-cover').value,nome,cargoDest:document.getElementById('cl-cargo-dest').value.trim(),local:document.getElementById('cl-local').value.trim(),tel:document.getElementById('cl-tel').value.trim(),email:document.getElementById('cl-email').value.trim()};
+  if(id){const i=clients.findIndex(c=>c.id===id);clients[i]=obj;}else clients.push(obj);
+  await persistDB(); closeM('m-client'); refreshSelects(); fillClient(); renderClientTbl();
+  toast('✅','Cliente salvo!');
+}
+function editClient(id){
+  const c=clients.find(x=>x.id===id); openM('m-client');
+  document.getElementById('m-client-title').textContent='Editar Cliente';
+  document.getElementById('client-eid').value=id;
+  document.getElementById('cl-obra').value=c.obra;
+  document.getElementById('cl-para').value=c.para||'';
+  document.getElementById('cl-sistema').value=c.sistema;
+  document.getElementById('cl-nome').value=c.nome;
+  document.getElementById('cl-cargo-dest').value=c.cargoDest||'';
+  document.getElementById('cl-local').value=c.local||'';
+  document.getElementById('cl-tel').value=c.tel||'';
+  document.getElementById('cl-email').value=c.email||'';
+  document.getElementById('cl-cover').value=c.cover||'';
+  if(c.cover){
+    document.getElementById('cover-preview').style.display='flex';
+    document.getElementById('cover-preview-img').src=c.cover;
+    renderAssetGallery('cover-gallery', c.cover, selectCover);
+  }
+}
+async function deleteClient(id){
+  if(!confirm('Remover cliente?'))return;
+  clients=clients.filter(c=>c.id!==id);
+  await persistDB(); refreshSelects(); fillClient(); renderClientTbl();
+  toast('🗑️','Removido.');
+}
+function renderClientTbl(){
+  const w=document.getElementById('client-tbl');
+  if(!clients.length){w.innerHTML='<div class="empty">Nenhum cliente cadastrado.</div>';return;}
+  w.innerHTML=`<table class="dbt"><thead><tr><th>Empreendimento</th><th>Contato</th><th>Capa</th><th></th></tr></thead><tbody>
+  ${clients.map(c=>`<tr>
+    <td><strong>${c.obra}</strong><br><span style="font-size:10.5px;color:var(--sub)">${c.sistema||''}</span></td>
+    <td>${c.nome}${c.cargoDest?`<br><span style="font-size:10.5px;color:var(--sub)">${c.cargoDest}</span>`:''}<br><span style="font-size:10.5px;color:var(--sub)">${c.tel||''}</span></td>
+    <td>${c.cover?`<img src="${c.cover}" style="height:32px;width:48px;object-fit:cover;border-radius:3px;">`:'<span style="color:var(--muted);font-size:11px">—</span>'}</td>
+    <td><div class="td-acts">
+      <button class="bic" onclick="editClient('${c.id}')">✏️</button>
+      <button class="bic del" onclick="deleteClient('${c.id}')">🗑️</button>
+    </div></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+// ════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════
+let toastT;
+function toast(ic,msg,persist=false){
+  document.getElementById('t-ic').textContent=ic;
+  document.getElementById('t-msg').textContent=msg;
+  document.getElementById('toast').classList.add('show');
+  clearTimeout(toastT);
+  if(!persist) toastT=setTimeout(()=>document.getElementById('toast').classList.remove('show'),2800);
+}
+function hideToast(){ document.getElementById('toast').classList.remove('show'); }
+
+// ════════════════════════════════════════
+//  RESET
+// ════════════════════════════════════════
+function resetReport(){
+  if(!confirm('Limpar o formulário?'))return;
+  images=[]; renderImgGrid(); selTechs=[]; renderChips();
+  ['r_num','r_obs','r_final','r_quote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sel-client').value='';
+  document.getElementById('sel-tech').value='';
+  fillClient();
+}
+
+// ════════════════════════════════════════
+//  PDF GENERATION — via server
+// ════════════════════════════════════════
+async function generatePDF(){
+  const clientId=document.getElementById('sel-client').value;
+  const cl=clients.find(x=>x.id===clientId);
+  if(!cl){alert('Selecione um cliente/obra antes de gerar o PDF.');return;}
+
+  const techObjs=selTechs.map(id=>techs.find(t=>t.id===id)).filter(Boolean);
+
+  const btn=document.getElementById('pdf-btn');
+  btn.disabled=true; btn.textContent='⏳ Gerando...';
+  toast('⏳','Gerando PDF com Puppeteer...', true);
+
+  // Send only {url, caption} — server resolves to disk files
+  const cleanImages = images.map(({url,caption,landscape})=>({url,caption,landscape}));
+  console.log('📋 Captions sendo enviadas:', cleanImages.map(i=>i.caption));
+
+  const payload = {
+    relNum  : document.getElementById('r_num').value.trim(),
+    date    : document.getElementById('r_date').value,
+    status  : document.getElementById('r_status').value,
+    obs     : document.getElementById('r_obs').value.trim(),
+    final   : document.getElementById('r_final').value.trim(),
+    quote   : document.getElementById('r_quote').value.trim(),
+    client  : cl,
+    techs   : techObjs,
+    images  : cleanImages,
+  };
+
+  try {
+    const res = await fetch('/api/pdf', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify(payload),
+    });
+
+    if(!res.ok){
+      const err=await res.json().catch(()=>({error:'Erro desconhecido'}));
+      throw new Error(err.error||'Falha no servidor');
+    }
+
+    const blob     = await res.blob();
+    const clientName = (cl.obra||'CLIENTE').toUpperCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/\s+/g,'-').replace(/[^A-Z0-9\-]/g,'');
+    const relNum  = (payload.relNum||'R01').replace(/\s+/g,'');
+    const dateParts = (payload.date||'').split('-');
+    const dateStr = dateParts.length===3?`${dateParts[2]}_${dateParts[1]}_${dateParts[0]}`:'00_00_0000';
+    const fname   = `REL-HVAC-${clientName}-${relNum}_${dateStr}.pdf`;
+
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href    = url; a.download = fname; a.click();
+    URL.revokeObjectURL(url);
+
+    hideToast();
+    toast('✅', `PDF gerado: ${fname}`);
+  } catch(err){
+    hideToast();
+    toast('❌', `Erro: ${err.message}`);
+    console.error(err);
+  } finally {
+    btn.disabled=false; btn.textContent='⬇ Gerar PDF';
+  }
+}
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+document.getElementById('r_date').value=new Date().toISOString().split('T')[0];
+loadDB().then(()=>{ refreshSelects(); renderImgGrid(); });
+loadAssets();
+</script>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+/* ═══════════════════════════════════════════════
+   PAGE
+═══════════════════════════════════════════════ */
+@page { size: A4; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt;          /* ↑ slightly larger base */
+  color: #111;
+  background: #fff;
+  width: 210mm;
+}
+
+.page {
+  width: 210mm;
+  height: 297mm;
+  position: relative;
+  background: #fff;
+  overflow: hidden;
+  page-break-after: always;
+}
+.page:last-child { page-break-after: avoid; }
+
+/* ═══════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════ */
+.hdr {
+  margin: 7mm 12mm 0;
+  width: calc(210mm - 24mm);
+  border-collapse: collapse;
+  table-layout: fixed;
+  border: 1px solid #888;
+}
+.hdr > tbody > tr > td { border: 1px solid #888; padding: 0; vertical-align: middle; }
+
+.hdr-logo { width: 40mm; text-align: center; padding: 3mm; }
+.hdr-logo img { width: 34mm; height: auto; display: block; margin: auto; }
+.hdr-logo-txt { font-size: 7pt; font-weight: bold; line-height: 1.3; text-align: center; color: #111; }
+
+.hdr-title { text-align: center; padding: 3mm 3mm; }
+.hdr-t1 { font-size: 16pt; font-weight: bold; display: block; line-height: 1.25; }
+.hdr-t2 { font-size: 12pt; font-weight: bold; display: block; margin-top: 1mm; }
+
+.hdr-right { width: 42mm; vertical-align: top; padding: 0; }
+.hdr-right-inner { width: 100%; border-collapse: collapse; height: 100%; }
+.hdr-right-inner td {
+  padding: 1.5mm 2.5mm;
+  vertical-align: middle;
+  font-size: 7.5pt;
+  border: 1px solid #888;
+  text-align: center;        /* date centered */
+}
+.hdr-obra { font-weight: bold; font-size: 8pt; text-align: center; }
+.hdr-lbl  { font-size: 6pt; color: #555; display: block; text-align: center; }
+.hdr-val  { font-weight: bold; font-size: 8pt; display: block; text-align: center; }
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+.ftr {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 14mm;
+}
+.ftr-inner {
+  margin: 0 12mm;
+  width: calc(210mm - 24mm);
+  border-collapse: collapse;
+  border: 1px solid #888;
+  table-layout: fixed;
+  height: 100%;
+}
+.ftr-inner td {
+  border: 1px solid #888;
+  padding: 1.5mm 3mm;
+  font-size: 6.5pt;
+  color: #333;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.6;
+}
+.ftr-inner a { color: #1155cc; text-decoration: none; }
+.ftr-pg { width: 18mm; font-weight: bold; font-size: 9pt; }
+.ftr-pg-lbl { font-size: 6pt; font-weight: normal; display: block; color: #555; }
+
+/* Content area */
+.content { margin: 5mm 12mm 18mm; }
+
+/* ID TABLE */
+.idt { width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 5mm; }
+.idt, .idt td { border: 1px solid #888; }
+.idt td { padding: 1mm 2.5mm; width: 50%; vertical-align: top; line-height: 1.35; font-weight: bold; }
+
+/* Cover */
+.cov-titles { text-align: center; margin: 12mm 0 10mm; }
+.cov-t1 { font-size: 14pt; font-weight: bold; display: block; margin-bottom: 6mm; }
+.cov-t2 { font-size: 11pt; font-weight: bold; text-decoration: underline; display: block; margin-bottom: 1mm; line-height: 1.4; }
+.cov-t3 { font-size: 11pt; font-weight: bold; display: block; line-height: 1.4; }
+
+/* Cover photo — fills content width, max-height cap */
+.cov-photo { text-align: center; margin: 5mm 0 6mm; }
+.cov-photo img {
+  width: 100%;
+  max-height: 120mm;
+  object-fit: cover;
+  display: block;
+  border: 1px solid #bbb;
+}
+
+/* Index */
+.idx-title { text-align: center; font-size: 12pt; font-weight: bold; text-decoration: underline; margin: 6mm 0 5mm; }
+.idx-row { display: flex; align-items: baseline; padding: 3mm 0; }
+.idx-n { font-weight: bold; min-width: 9mm; font-size: 10pt; }
+.idx-t { font-weight: bold; font-size: 10pt; }
+.idx-d { flex: 1; border-bottom: 1px dotted #aaa; margin: 0 3mm; position: relative; top: -1.5mm; min-width: 10mm; }
+.idx-p { font-size: 10pt; min-width: 8mm; text-align: right; }
+
+/* Sections — bigger gap like the Birmann29 reference */
+.sec { margin: 7mm 0 3mm; page-break-after: avoid; }
+.sec-row { display: flex; align-items: baseline; gap: 5mm; }
+.sec-n { font-size: 11pt; font-weight: bold; min-width: 7mm; }
+.sec-t { font-size: 11pt; font-weight: bold; text-transform: uppercase; }
+
+/* Body — increased font + line-height for airy feel */
+.bp  { font-size: 10pt; line-height: 1.65; margin: 0 0 3mm 10mm; text-align: justify; }
+.bpb { font-size: 10pt; font-weight: bold; margin: 3mm 0 2mm 10mm; }
+.bul     { font-size: 10pt; font-weight: bold; margin: 2mm 0 2mm 14mm; line-height: 1.5; }
+.bul-chk { font-size: 10pt; margin: 1.5mm 0 1.5mm 14mm; line-height: 1.5; }
+.bul-chk::before { content: "✔ "; }
+
+/* Status */
+.badge { display: inline-block; padding: 1.5mm 5mm; border-radius: 10mm; font-size: 9pt; font-weight: bold; margin: 3mm 0 4mm 10mm; border: 1px solid; }
+.b-op  { background: #d4edda; color: #155724; border-color: #b7dfba; }
+.b-pen { background: #fff3cd; color: #856404; border-color: #ffc107; }
+.b-cri { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+
+/* Images — uniform size: landscape fills width, portrait fixed height */
+.img-hdr { font-weight: bold; font-size: 10pt; margin: 3mm 0 4mm 5mm; }
+.img-hdr::before { content: "♦  "; }
+
+.img-block { margin-bottom: 7mm; text-align: center; }
+
+/* Landscape images: natural aspect ratio, max-height cap, no cropping */
+.img-block img.landscape {
+  width: 80%;
+  max-height: 100mm;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 1.5mm;
+  border: 1px solid #bbb;
+}
+
+/* Portrait images: natural aspect ratio, narrower */
+.img-block img.portrait {
+  width: auto;
+  max-width: 52mm;
+  max-height: 105mm;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 1.5mm;
+  border: 1px solid #bbb;
+}
+
+.img-block { margin-bottom: 12mm; text-align: center; }
+.img-cap { font-size: 8pt; font-style: italic; color: #333; text-align: center; }
+
+/* Quote */
+.qt { font-size: 10pt; font-weight: bold; margin: 7mm 0 7mm 10mm; line-height: 1.5; }
+
+/* ═══════════════════════════════════════════════
+   SIGNATURE — image sits above line with overlap
+   Uses display:block + negative margin-bottom so
+   the image bottom edge overlaps the line below it
+═══════════════════════════════════════════════ */
+.sig {
+  margin: 10mm 0 0 10mm;
+}
+.sig-pic {
+  display: block;
+  max-width: 80mm;
+  max-height: 26mm;
+  object-fit: contain;
+  margin-bottom: -8mm;
+}
+.sig-line {
+  width: 65mm;
+  border-bottom: 1.5px solid #444;
+  margin-bottom: 2mm;
+}
+.sig-name { font-weight: bold; font-size: 10pt; margin-top: 1mm; }
+.sig-role { font-size: 9.5pt; }
+</style>
+<script>/*INJECT_DATA*/</script>
+</head>
+<body>
+<script>
+(function(){
+  const D   = window.REPORT_DATA || {};
+  const cl  = D.client || {};
+  const rem = (D.techs&&D.techs.length) ? D.techs[0]
+              : {nome:'Trend Controls Automação',cargo:'Auxiliar Técnico',tel:'',email:'',sign:''};
+  const logo = window.LOGO_B64 || '';
+  const imgs = D.images || [];
+
+  function e(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fd(d){ if(!d)return'—'; const[y,m,day]=d.split('-'); return`${day}/${m}/${y}`; }
+
+  /* total pages: capa(1) + índice(1) + obs(1) + imgPgs + final(1) */
+  const hasI   = imgs.length > 0;
+  const imgPgs = hasI ? Math.ceil(imgs.length / 2) : 0;  /* 2 imgs per page */
+  const TOTAL  = 3 + imgPgs + 1;
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  function H(pg){
+    const logoHtml = logo
+      ? `<img src="${logo}" alt="logo">`
+      : `<div class="hdr-logo-txt">trend<br>controls<br><span style="font-weight:normal;font-size:5.5pt">automação</span></div>`;
+    return `
+    <table class="hdr" cellspacing="0"><tbody><tr>
+      <td class="hdr-logo">${logoHtml}</td>
+      <td class="hdr-title">
+        <span class="hdr-t1">Relatório Técnico</span>
+        <span class="hdr-t2">Sistemas Especiais</span>
+      </td>
+      <td class="hdr-right">
+        <table class="hdr-right-inner" cellspacing="0"><tbody>
+          <tr><td class="hdr-obra">${e(cl.obra||'—')}</td></tr>
+          <tr><td><span class="hdr-lbl">Data</span><span class="hdr-val">${fd(D.date)}</span></td></tr>
+        </tbody></table>
+      </td>
+    </tr></tbody></table>`;
+  }
+
+  /* ── FOOTER (FIX 3) ─────────────────────────────────────── */
+  function F(pg){
+    return `
+    <div class="ftr">
+      <table class="ftr-inner" cellspacing="0"><tbody><tr>
+        <td>Rua Estilo Barroco, 225 – Chácara Santo Antônio - São Paulo-SP - Brasil.<br>
+            CEP - 04709-010 &nbsp;Fone + 55 11 51817200<br>
+            <a href="#">www.trendcontrols.com.br</a></td>
+        <td class="ftr-pg"><span class="ftr-pg-lbl">Folhas</span>${pg}/${TOTAL}</td>
+      </tr></tbody></table>
+    </div>`;
+  }
+
+  /* ── ID TABLE (FIX 1) — correct row order ───────────────── */
+  function idt(){
+    return `
+    <table class="idt" cellspacing="0"><tbody>
+      <tr>
+        <td>Para: ${e(cl.para||cl.obra||'—')}</td>
+        <td>De: Trend Controls Automação</td>
+      </tr>
+      <tr>
+        <td>Nome: ${e(cl.nome||'—')}</td>
+        <td>Nome: ${e(rem.nome||'—')}</td>
+      </tr>
+      <tr>
+        <td>Local: ${e(cl.local||'—')}</td>
+        <td>Local: Rua Estilo Barroco, 225 – SP</td>
+      </tr>
+      <tr>
+        <td>Tel.: ${e(cl.tel||'—')}</td>
+        <td>Tel.: ${e(rem.tel||'—')}</td>
+      </tr>
+      <tr>
+        <td>E-mail: <a href="mailto:${e(cl.email)}" style="color:#1155cc">${e(cl.email||'—')}</a></td>
+        <td>E-mail: <a href="mailto:${e(rem.email)}" style="color:#1155cc">${e(rem.email||'—')}</a></td>
+      </tr>
+      <tr>
+        <td>Empreendimento: ${e(cl.obra||'—')}</td>
+        <td>Relatório: ${e(D.relNum||'—')}</td>
+      </tr>
+    </tbody></table>`;
+  }
+
+  /* ── STATUS BADGE ────────────────────────────────────────── */
+  function badge(){
+    const s = D.status||'Operacional';
+    const c = s==='Operacional'?'b-op': s==='Com pendências'?'b-pen':'b-cri';
+    return `<span class="badge ${c}">Status do Sistema: ${e(s)}</span>`;
+  }
+
+  /* ══════════════════════════════════
+     PAGE 1 — CAPA
+     header → título central → foto (natural size) → tabela id
+  ══════════════════════════════════ */
+  const p1 = `<div class="page">${H(1)}
+    <div class="content">
+      ${idt()}
+      <div class="cov-titles">
+        <span class="cov-t1">RELATÓRIO TÉCNICO</span>
+        <span class="cov-t2">SISTEMA ESPECIAL – SSCU_HVAC</span>
+        <span class="cov-t3">SISTEMA DE SUPERVISÃO E CONTROLE DE UTILIDADES - HVAC</span>
+      </div>
+      ${cl.cover ? `<div class="cov-photo"><img src="${cl.cover}" alt="empreendimento"></div>` : ''}
+    </div>
+    ${F(1)}</div>`;
+
+  /* ══════════════════════════════════
+     PAGE 2 — ÍNDICE
+  ══════════════════════════════════ */
+  const idxItems = [
+    {n:'1', t:'OBJETIVO',                           p:3},
+    {n:'2', t:'SISTEMAS ESPECIAIS',                 p:3},
+    {n:'3', t:'OBSERVAÇÕES APONTAMENTOS RELATÓRIO', p:3},
+    {n:'4', t:'CONSIDERAÇÕES FINAIS',               p:TOTAL},
+  ];
+
+  const p2 = `<div class="page">${H(2)}
+    <div class="content">
+      <div class="idx-title">ÍNDICE</div>
+      ${idxItems.map(r=>`
+      <div class="idx-row">
+        <span class="idx-n">${r.n}</span>
+        <span class="idx-t">${e(r.t)}</span>
+        <span class="idx-d"></span>
+        <span class="idx-p">${r.p}</span>
+      </div>`).join('')}
+    </div>
+    ${F(2)}</div>`;
+
+  /* ══════════════════════════════════
+     PAGE 3 — OBJETIVO + SISTEMAS + OBS
+  ══════════════════════════════════ */
+  const obsLines = (D.obs||'').split('\n').filter(l=>l.trim())
+    .map(l=>`<p class="bp">${e(l)}</p>`).join('');
+  const techsHtml = (D.techs||[])
+    .map(t=>`<div class="bul-chk">${e(t.nome)}</div>`).join('');
+
+  const p3 = `<div class="page">${H(3)}
+    <div class="content">
+
+      <div class="sec"><div class="sec-row">
+        <span class="sec-n">1</span><span class="sec-t">OBJETIVO</span>
+      </div></div>
+      <p class="bp">Este documento tem como objetivo apontar manutenção preventiva, preditiva e corretiva dos equipamentos instalados no sistema.</p>
+
+      <div class="sec"><div class="sec-row">
+        <span class="sec-n">2</span><span class="sec-t">SISTEMAS ESPECIAIS</span>
+      </div></div>
+      <p class="bp">A elaboração deste relatório é referente aos seguintes sistemas eletrônicos:</p>
+      <div class="bul">● ${e(cl.sistema||'SISTEMA DE SUPERVISÃO E CONTROLE DE UTILIDADES – HVAC')}</div>
+
+      <div class="sec"><div class="sec-row">
+        <span class="sec-n">3</span><span class="sec-t">OBSERVAÇÕES APONTAMENTOS RELATÓRIO</span>
+      </div></div>
+      ${obsLines}
+      <p class="bpb" style="margin-top:3mm">Relatório Técnico:</p>
+      <div class="bul">● ${e(cl.sistema||'SISTEMA DE SUPERVISÃO E CONTROLE DE UTILIDADES – HVAC')}</div>
+      <p class="bp" style="margin-top:3mm">Realizada visita Técnica no dia ${fd(D.date)} pelos colaboradores abaixo.</p>
+      ${techsHtml}
+      ${badge()}
+
+    </div>
+    ${F(3)}</div>`;
+
+  /* ══════════════════════════════════
+     PAGES 4..N-1 — IMAGENS
+  ══════════════════════════════════ */
+  // Detect orientation from dataUrl dimensions via Image object
+  // Since we're in Puppeteer, we can use a synchronous approach via
+  // pre-computed orientation stored alongside each image.
+  // Orientation is sent from the front-end as img.landscape (bool).
+  function imgClass(img){ return img.landscape===false ? 'portrait' : 'landscape'; }
+
+  let imgPgsHtml = '';
+  if(hasI){
+    let pg = 4;
+    for(let i=0; i<imgs.length; i+=2){
+      const a = imgs[i];
+      const b = imgs[i+1];
+      imgPgsHtml += `<div class="page">${H(pg)}
+        <div class="content">
+          <div class="img-hdr">Imagens dos serviços executados:</div>
+
+          <div class="img-block">
+            <img src="${a.url}" class="${imgClass(a)}" alt="${e(a.caption)}">
+            <div class="img-cap">${e(a.caption)};</div>
+          </div>
+
+          ${b ? `
+          <div class="img-block">
+            <img src="${b.url}" class="${imgClass(b)}" alt="${e(b.caption)}">
+            <div class="img-cap">${e(b.caption)};</div>
+          </div>` : ''}
+
+        </div>
+        ${F(pg)}</div>`;
+      pg++;
+    }
+  }
+
+  /* ══════════════════════════════════
+     LAST PAGE — CONSIDERAÇÕES FINAIS
+  ══════════════════════════════════ */
+  const finN     = '4';
+  const finLines = (D.final||'').split('\n').filter(l=>l.trim())
+    .map(l=>`<p class="bp">${e(l)}</p>`).join('');
+  const qtHtml   = D.quote ? `<div class="qt">${e(D.quote)}</div>` : '';
+  const sigHtml = `<div class="sig">
+    ${rem.sign ? `<img class="sig-pic" src="${rem.sign}" alt="assinatura">` : ''}
+    <div class="sig-line"></div>
+    <div class="sig-name">${e(rem.nome||'—')}</div>
+    <div class="sig-role">${e(rem.cargo||'Auxiliar Técnico')}</div>
+  </div>`;
+
+  const pFinal = `<div class="page">${H(TOTAL)}
+    <div class="content">
+      <div class="sec"><div class="sec-row">
+        <span class="sec-n">${finN}</span><span class="sec-t">CONSIDERAÇÕES FINAIS</span>
+      </div></div>
+      ${finLines}
+      ${qtHtml}
+      ${sigHtml}
+    </div>
+    ${F(TOTAL)}</div>`;
+
+  /* ── ASSEMBLE ────────────────────────────────────────────── */
+  document.body.innerHTML = p1 + p2 + p3 + imgPgsHtml + pFinal;
+})();
+</script>
+</body>
+</html>

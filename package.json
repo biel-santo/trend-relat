@@ -1,0 +1,14 @@
+{
+  "name": "relatorio-hvac",
+  "version": "1.0.0",
+  "description": "Gerador de Relatórios Técnicos - Trend Controls",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "install-browser": "node node_modules/puppeteer/install.mjs"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "puppeteer": "^24.15.0"
+  }
+}
